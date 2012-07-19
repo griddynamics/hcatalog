@@ -31,6 +31,7 @@
     <dirset dir="${basedir}/../build/test/classes"/>
     <dirset dir="${basedir}/build/classes"/>
     <dirset dir="${basedir}/build/test/classes"/>
+    <pathelement path="${clover.jar}"/>
   </path>
 
   <!-- Ideally we would simply use the "default" Ivy configuration jars; however,

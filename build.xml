@@ -401,7 +401,9 @@
       </junit>
       <fail if="tests.failed">Tests failed!</fail>
     </sequential>
-    <ant target="test" dir="hcatalog-pig-adapter" inheritAll="false"/>
+    <ant target="test" dir="hcatalog-pig-adapter" inheritAll="false">
+      <property name="clover.jar" value="${clover.jar}"/>
+    </ant>
     <antcall target="test-storage-handlers"/>
   </target>
   
