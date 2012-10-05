@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,22 +26,23 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hcatalog.hbase.SkeletonHBaseTest;
-import org.apache.hcatalog.hbase.snapshot.transaction.thrift.*;
+import org.apache.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevision;
+import org.apache.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevisionList;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 import org.junit.Test;
 
-public class TestRevisionManager extends SkeletonHBaseTest{
+public class TestRevisionManager extends SkeletonHBaseTest {
 
     @Test
-    public void testBasicZNodeCreation() throws IOException, KeeperException, InterruptedException{
+    public void testBasicZNodeCreation() throws IOException, KeeperException, InterruptedException {
 
         int port = getHbaseConf().getInt("hbase.zookeeper.property.clientPort", 2181);
         String servers = getHbaseConf().get("hbase.zookeeper.quorum");
         String[] splits = servers.split(",");
         StringBuffer sb = new StringBuffer();
-        for(String split : splits){
+        for (String split : splits) {
             sb.append(split);
             sb.append(':');
             sb.append(port);
@@ -63,7 +64,7 @@ public class TestRevisionManager extends SkeletonHBaseTest{
         Stat result = zk.exists(transactionDataTablePath, false);
         assertTrue(result != null);
 
-        for(String colFamiliy : columnFamilies){
+        for (String colFamiliy : columnFamilies) {
             String cfPath = transactionDataTablePath + "/" + colFamiliy;
             Stat resultTwo = zk.exists(cfPath, false);
             assertTrue(resultTwo != null);
@@ -72,13 +73,13 @@ public class TestRevisionManager extends SkeletonHBaseTest{
     }
 
     @Test
-    public void testCommitTransaction() throws IOException{
+    public void testCommitTransaction() throws IOException {
 
         int port = getHbaseConf().getInt("hbase.zookeeper.property.clientPort", 2181);
         String servers = getHbaseConf().get("hbase.zookeeper.quorum");
         String[] splits = servers.split(",");
         StringBuffer sb = new StringBuffer();
-        for(String split : splits){
+        for (String split : splits) {
             sb.append(split);
             sb.append(':');
             sb.append(port);
@@ -86,7 +87,7 @@ public class TestRevisionManager extends SkeletonHBaseTest{
 
         Configuration conf = RevisionManagerConfiguration.create(getHbaseConf());
         conf.set(RMConstants.ZOOKEEPER_DATADIR, "/rm_base");
-        ZKBasedRevisionManager  manager = new ZKBasedRevisionManager();
+        ZKBasedRevisionManager manager = new ZKBasedRevisionManager();
         manager.initialize(conf);
         manager.open();
         ZKUtil zkutil = new ZKUtil(sb.toString(), "/rm_base");
@@ -94,15 +95,15 @@ public class TestRevisionManager extends SkeletonHBaseTest{
         String tableName = newTableName("testTable");
         List<String> columnFamilies = Arrays.asList("cf1", "cf2", "cf3");
         Transaction txn = manager.beginWriteTransaction(tableName,
-                columnFamilies);
+            columnFamilies);
 
         List<String> cfs = zkutil.getColumnFamiliesOfTable(tableName);
         assertTrue(cfs.size() == columnFamilies.size());
-        for (String cf : cfs){
+        for (String cf : cfs) {
             assertTrue(columnFamilies.contains(cf));
         }
 
-        for(String colFamily : columnFamilies){
+        for (String colFamily : columnFamilies) {
             String path = PathUtil.getRunningTxnInfoPath("/rm_base", tableName, colFamily);
             byte[] data = zkutil.getRawData(path, null);
             StoreFamilyRevisionList list = new StoreFamilyRevisionList();
@@ -114,7 +115,7 @@ public class TestRevisionManager extends SkeletonHBaseTest{
 
         }
         manager.commitWriteTransaction(txn);
-        for(String colFamiliy : columnFamilies){
+        for (String colFamiliy : columnFamilies) {
             String path = PathUtil.getRunningTxnInfoPath("/rm_base", tableName, colFamiliy);
             byte[] data = zkutil.getRawData(path, null);
             StoreFamilyRevisionList list = new StoreFamilyRevisionList();
@@ -127,13 +128,13 @@ public class TestRevisionManager extends SkeletonHBaseTest{
     }
 
     @Test
-    public void testAbortTransaction() throws IOException{
+    public void testAbortTransaction() throws IOException {
 
         int port = getHbaseConf().getInt("hbase.zookeeper.property.clientPort", 2181);
         String host = getHbaseConf().get("hbase.zookeeper.quorum");
         Configuration conf = RevisionManagerConfiguration.create(getHbaseConf());
         conf.set(RMConstants.ZOOKEEPER_DATADIR, "/rm_base");
-        ZKBasedRevisionManager  manager = new ZKBasedRevisionManager();
+        ZKBasedRevisionManager manager = new ZKBasedRevisionManager();
         manager.initialize(conf);
         manager.open();
         ZKUtil zkutil = new ZKUtil(host + ':' + port, "/rm_base");
@@ -144,12 +145,12 @@ public class TestRevisionManager extends SkeletonHBaseTest{
         List<String> cfs = zkutil.getColumnFamiliesOfTable(tableName);
 
         assertTrue(cfs.size() == columnFamilies.size());
-        for (String cf : cfs){
+        for (String cf : cfs) {
             assertTrue(columnFamilies.contains(cf));
         }
 
-        for(String colFamiliy : columnFamilies){
-            String path = PathUtil.getRunningTxnInfoPath("/rm_base",tableName, colFamiliy);
+        for (String colFamiliy : columnFamilies) {
+            String path = PathUtil.getRunningTxnInfoPath("/rm_base", tableName, colFamiliy);
             byte[] data = zkutil.getRawData(path, null);
             StoreFamilyRevisionList list = new StoreFamilyRevisionList();
             ZKUtil.deserialize(list, data);
@@ -160,8 +161,8 @@ public class TestRevisionManager extends SkeletonHBaseTest{
 
         }
         manager.abortWriteTransaction(txn);
-        for(String colFamiliy : columnFamilies){
-            String path = PathUtil.getRunningTxnInfoPath("/rm_base",tableName, colFamiliy);
+        for (String colFamiliy : columnFamilies) {
+            String path = PathUtil.getRunningTxnInfoPath("/rm_base", tableName, colFamiliy);
             byte[] data = zkutil.getRawData(path, null);
             StoreFamilyRevisionList list = new StoreFamilyRevisionList();
             ZKUtil.deserialize(list, data);
@@ -169,8 +170,8 @@ public class TestRevisionManager extends SkeletonHBaseTest{
 
         }
 
-        for(String colFamiliy : columnFamilies){
-            String path = PathUtil.getAbortInformationPath("/rm_base",tableName, colFamiliy);
+        for (String colFamiliy : columnFamilies) {
+            String path = PathUtil.getAbortInformationPath("/rm_base", tableName, colFamiliy);
             byte[] data = zkutil.getRawData(path, null);
             StoreFamilyRevisionList list = new StoreFamilyRevisionList();
             ZKUtil.deserialize(list, data);
@@ -188,7 +189,7 @@ public class TestRevisionManager extends SkeletonHBaseTest{
         String servers = getHbaseConf().get("hbase.zookeeper.quorum");
         String[] splits = servers.split(",");
         StringBuffer sb = new StringBuffer();
-        for(String split : splits){
+        for (String split : splits) {
             sb.append(split);
             sb.append(':');
             sb.append(port);
@@ -196,31 +197,31 @@ public class TestRevisionManager extends SkeletonHBaseTest{
 
         Configuration conf = RevisionManagerConfiguration.create(getHbaseConf());
         conf.set(RMConstants.ZOOKEEPER_DATADIR, "/rm_base");
-        ZKBasedRevisionManager  manager = new ZKBasedRevisionManager();
+        ZKBasedRevisionManager manager = new ZKBasedRevisionManager();
         manager.initialize(conf);
         manager.open();
         String tableName = newTableName("testTable");
         List<String> columnFamilies = Arrays.asList("cf1", "cf2");
         Transaction txn = manager.beginWriteTransaction(tableName,
-                columnFamilies, 40);
+            columnFamilies, 40);
         Thread.sleep(100);
         try {
             manager.commitWriteTransaction(txn);
         } catch (Exception e) {
             assertTrue(e instanceof IOException);
             assertEquals(e.getMessage(),
-                    "The transaction to be removed not found in the data.");
+                "The transaction to be removed not found in the data.");
         }
 
     }
 
     @Test
-    public void testCreateSnapshot() throws IOException{
+    public void testCreateSnapshot() throws IOException {
         int port = getHbaseConf().getInt("hbase.zookeeper.property.clientPort", 2181);
         String host = getHbaseConf().get("hbase.zookeeper.quorum");
         Configuration conf = RevisionManagerConfiguration.create(getHbaseConf());
         conf.set(RMConstants.ZOOKEEPER_DATADIR, "/rm_base");
-        ZKBasedRevisionManager  manager = new ZKBasedRevisionManager();
+        ZKBasedRevisionManager manager = new ZKBasedRevisionManager();
         manager.initialize(conf);
         manager.open();
         String tableName = newTableName("testTable");

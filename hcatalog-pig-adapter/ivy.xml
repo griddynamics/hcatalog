@@ -15,7 +15,7 @@
    limitations under the License.
 -->
 
-<ivy-module version="2.0">
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
   <info organisation="org.apache.hcatalog"
         module="${ant.project.name}"
         revision="${hcatalog.version}">
@@ -26,19 +26,14 @@
 
   <configurations defaultconfmapping="default">
     <conf name="default"/>
-    <conf name="test" extends="default" visibility="private"/>
+    <conf name="test" extends="default"/>
   </configurations>
 
   <dependencies>
-    <dependency org="org.apache.hadoop" name="hadoop-core" rev="${hadoop-core.version}"/>
-    <dependency org="org.apache.hive" name="hive-metastore" rev="${hive.version}"/>
-    <dependency org="org.apache.hive" name="hive-exec" rev="${hive.version}"/>
+    <dependency org="org.apache.hcatalog" name="hcatalog-core" rev="${hcatalog.version}"/>
     <dependency org="org.apache.pig" name="pig" rev="${pig.version}"/>
-    <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j.version}"/>
-    <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j.version}"/>
-
-    <!-- Test dependencies -->
-    <dependency org="org.apache.hive" name="hive-cli"
-      rev="${hive.version}" conf="test->default"/>
+    <!-- test dependencies -->
+    <dependency org="junit" name="junit" rev="${junit.version}" conf="test->default"/>
+    <dependency org="org.apache.hadoop" name="hadoop-test" rev="${hadoop20.version}" conf="test->default"/>
   </dependencies>
 </ivy-module>

@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import junit.framework.TestCase;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -50,11 +52,11 @@ import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
 import org.junit.Test;
 
-public class TestSequenceFileReadWrite {
-  private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
-      "/build/test/data/" + TestSequenceFileReadWrite.class.getCanonicalName();
-  private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
-  private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
+public class TestSequenceFileReadWrite extends TestCase {
+    private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
+            "/build/test/data/" + TestSequenceFileReadWrite.class.getCanonicalName();
+    private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
+    private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
 
     private static Driver driver;
     private static PigServer server;
@@ -84,7 +86,7 @@ public class TestSequenceFileReadWrite {
     }
 
     @Test
-   public void testSequenceTableWriteRead() throws Exception{
+    public void testSequenceTableWriteRead() throws Exception {
         Initialize();
         String createTable = "CREATE TABLE demo_table(a0 int, a1 String, a2 String) STORED AS SEQUENCEFILE";
         driver.run("drop table demo_table");
@@ -110,10 +112,10 @@ public class TestSequenceFileReadWrite {
             numTuplesRead++;
         }
         assertEquals(input.length, numTuplesRead);
-   }
+    }
 
     @Test
-    public void testTextTableWriteRead() throws Exception{
+    public void testTextTableWriteRead() throws Exception {
         Initialize();
         String createTable = "CREATE TABLE demo_table_1(a0 int, a1 String, a2 String) STORED AS TEXTFILE";
         driver.run("drop table demo_table_1");
@@ -142,7 +144,7 @@ public class TestSequenceFileReadWrite {
     }
 
     @Test
-    public void testSequenceTableWriteReadMR() throws Exception{
+    public void testSequenceTableWriteReadMR() throws Exception {
         Initialize();
         String createTable = "CREATE TABLE demo_table_2(a0 int, a1 String, a2 String) STORED AS SEQUENCEFILE";
         driver.run("drop table demo_table_2");
@@ -167,7 +169,9 @@ public class TestSequenceFileReadWrite {
         HCatOutputFormat.setSchema(job, getSchema());
         job.setNumReduceTasks(0);
         assertTrue(job.waitForCompletion(true));
-        new FileOutputCommitterContainer(job, null).cleanupJob(job);
+        if (!HcatTestUtils.isHadoop23()) {
+            new FileOutputCommitterContainer(job, null).commitJob(job);
+        }
         assertTrue(job.isSuccessful());
 
         server.setBatchOn();
@@ -204,6 +208,7 @@ public class TestSequenceFileReadWrite {
         job.setOutputKeyClass(NullWritable.class);
         job.setOutputValueClass(DefaultHCatRecord.class);
         job.setInputFormatClass(TextInputFormat.class);
+        job.setNumReduceTasks(0);
         TextInputFormat.setInputPaths(job, INPUT_FILE_NAME);
 
         HCatOutputFormat.setOutput(job, OutputJobInfo.create(
@@ -211,7 +216,9 @@ public class TestSequenceFileReadWrite {
         job.setOutputFormatClass(HCatOutputFormat.class);
         HCatOutputFormat.setSchema(job, getSchema());
         assertTrue(job.waitForCompletion(true));
-        new FileOutputCommitterContainer(job, null).cleanupJob(job);
+        if (!HcatTestUtils.isHadoop23()) {
+            new FileOutputCommitterContainer(job, null).commitJob(job);
+        }
         assertTrue(job.isSuccessful());
 
         server.setBatchOn();
@@ -231,27 +238,27 @@ public class TestSequenceFileReadWrite {
     }
 
 
-  public static class Map extends Mapper<LongWritable, Text, NullWritable, DefaultHCatRecord>{
+    public static class Map extends Mapper<LongWritable, Text, NullWritable, DefaultHCatRecord> {
 
-      public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-          String[] cols = value.toString().split(",");
-          DefaultHCatRecord record = new DefaultHCatRecord(3);
-          record.set(0,Integer.parseInt(cols[0]));
-          record.set(1,cols[1]);
-          record.set(2,cols[2]);
-          context.write(NullWritable.get(), record);
-      }
+        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+            String[] cols = value.toString().split(",");
+            DefaultHCatRecord record = new DefaultHCatRecord(3);
+            record.set(0, Integer.parseInt(cols[0]));
+            record.set(1, cols[1]);
+            record.set(2, cols[2]);
+            context.write(NullWritable.get(), record);
+        }
     }
 
-  private HCatSchema getSchema() throws HCatException {
-      HCatSchema schema = new HCatSchema(new ArrayList<HCatFieldSchema>());
-      schema.append(new HCatFieldSchema("a0", HCatFieldSchema.Type.INT,
-              ""));
-      schema.append(new HCatFieldSchema("a1",
-              HCatFieldSchema.Type.STRING, ""));
-      schema.append(new HCatFieldSchema("a2",
-              HCatFieldSchema.Type.STRING, ""));
-      return schema;
-  }
+    private HCatSchema getSchema() throws HCatException {
+        HCatSchema schema = new HCatSchema(new ArrayList<HCatFieldSchema>());
+        schema.append(new HCatFieldSchema("a0", HCatFieldSchema.Type.INT,
+                ""));
+        schema.append(new HCatFieldSchema("a1",
+                HCatFieldSchema.Type.STRING, ""));
+        schema.append(new HCatFieldSchema("a2",
+                HCatFieldSchema.Type.STRING, ""));
+        return schema;
+    }
 
 }

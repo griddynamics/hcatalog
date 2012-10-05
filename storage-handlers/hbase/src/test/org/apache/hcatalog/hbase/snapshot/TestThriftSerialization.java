@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,14 +23,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.hcatalog.hbase.snapshot.transaction.thrift.*;
+
+import org.apache.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevision;
+import org.apache.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevisionList;
 import org.junit.Test;
 
 public class TestThriftSerialization {
 
     @Test
-    public void testLightWeightTransaction(){
-       StoreFamilyRevision trxn = new StoreFamilyRevision(0, 1000);
+    public void testLightWeightTransaction() {
+        StoreFamilyRevision trxn = new StoreFamilyRevision(0, 1000);
         try {
 
             byte[] data = ZKUtil.serialize(trxn);
@@ -46,11 +48,11 @@ public class TestThriftSerialization {
     }
 
     @Test
-    public void testWriteTransactionList(){
+    public void testWriteTransactionList() {
         List<StoreFamilyRevision> txnList = new ArrayList<StoreFamilyRevision>();
         long version;
         long timestamp;
-        for( int i = 0; i < 10; i++){
+        for (int i = 0; i < 10; i++) {
             version = i;
             timestamp = 1000 + i;
             StoreFamilyRevision wtx = new StoreFamilyRevision(version, timestamp);
@@ -67,9 +69,9 @@ public class TestThriftSerialization {
 
             Iterator<StoreFamilyRevision> itr = newList.getRevisionListIterator();
             int i = 0;
-            while(itr.hasNext()){
+            while (itr.hasNext()) {
                 StoreFamilyRevision txn = itr.next();
-                assertTrue(txn.getRevision() ==  i);
+                assertTrue(txn.getRevision() == i);
                 assertTrue(txn.getTimestamp() == (i + 1000));
                 i++;
             }

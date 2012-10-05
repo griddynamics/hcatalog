@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -45,7 +45,7 @@ class DefaultOutputCommitterContainer extends OutputCommitterContainer {
      * @throws IOException
      */
     public DefaultOutputCommitterContainer(JobContext context, org.apache.hadoop.mapred.OutputCommitter baseCommitter) throws IOException {
-        super(context,baseCommitter);
+        super(context, baseCommitter);
     }
 
     @Override
@@ -93,10 +93,10 @@ class DefaultOutputCommitterContainer extends OutputCommitterContainer {
         HiveMetaStoreClient client = null;
         try {
             HiveConf hiveConf = HCatUtil.getHiveConf(context.getConfiguration());
-            client = HCatUtil.createHiveClient(hiveConf);
+            client = HCatUtil.getHiveClient(hiveConf);
             String tokenStrForm = client.getTokenStrForm();
-            if(tokenStrForm != null && context.getConfiguration().get(HCatConstants.HCAT_KEY_TOKEN_SIGNATURE) != null) {
-              client.cancelDelegationToken(tokenStrForm);
+            if (tokenStrForm != null && context.getConfiguration().get(HCatConstants.HCAT_KEY_TOKEN_SIGNATURE) != null) {
+                client.cancelDelegationToken(tokenStrForm);
             }
         } catch (Exception e) {
             LOG.warn("Failed to cancel delegation token", e);

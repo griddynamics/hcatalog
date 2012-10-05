@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,15 +24,16 @@ import org.apache.pig.data.Tuple;
 
 public class MyPigStorage extends PigStorage {
 
-  String arg2;
-  public MyPigStorage(String arg1, String arg2) throws IOException {
-    super(arg1);
-    this.arg2 = arg2;
-  }
-  
-  @Override
-  public void putNext(Tuple t) throws IOException {
-      t.append(arg2);
-      super.putNext(t);
-  }
+    String arg2;
+
+    public MyPigStorage(String arg1, String arg2) throws IOException {
+        super(arg1);
+        this.arg2 = arg2;
+    }
+
+    @Override
+    public void putNext(Tuple t) throws IOException {
+        t.append(arg2);
+        super.putNext(t);
+    }
 }
