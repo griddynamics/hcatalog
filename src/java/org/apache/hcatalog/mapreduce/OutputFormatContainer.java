@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,7 +38,7 @@ abstract class OutputFormatContainer extends OutputFormat<WritableComparable<?>,
     /**
      * @param of OutputFormat this instance will contain
      */
-    public OutputFormatContainer(org.apache.hadoop.mapred.OutputFormat<? super WritableComparable<?>,? super Writable> of) {
+    public OutputFormatContainer(org.apache.hadoop.mapred.OutputFormat<? super WritableComparable<?>, ? super Writable> of) {
         this.of = of;
     }
 

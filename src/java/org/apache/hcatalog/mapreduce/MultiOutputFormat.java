@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,7 +33,6 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -47,6 +46,7 @@ import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskInputOutputContext;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hcatalog.shims.HCatHadoopShims;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,13 +144,13 @@ public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
 
     static {
         configsToOverride.add("mapred.output.dir");
-        configsToOverride.add(DistributedCache.CACHE_SYMLINK);
+        configsToOverride.add(HCatHadoopShims.Instance.get().getPropertyName(HCatHadoopShims.PropertyName.CACHE_SYMLINK));
         configsToMerge.put(JobContext.JOB_NAMENODES, COMMA_DELIM);
         configsToMerge.put("tmpfiles", COMMA_DELIM);
         configsToMerge.put("tmpjars", COMMA_DELIM);
         configsToMerge.put("tmparchives", COMMA_DELIM);
-        configsToMerge.put(DistributedCache.CACHE_ARCHIVES, COMMA_DELIM);
-        configsToMerge.put(DistributedCache.CACHE_FILES, COMMA_DELIM);
+        configsToMerge.put(HCatHadoopShims.Instance.get().getPropertyName(HCatHadoopShims.PropertyName.CACHE_ARCHIVES), COMMA_DELIM);
+        configsToMerge.put(HCatHadoopShims.Instance.get().getPropertyName(HCatHadoopShims.PropertyName.CACHE_FILES), COMMA_DELIM);
         configsToMerge.put("mapred.job.classpath.archives", System.getProperty("path.separator"));
         configsToMerge.put("mapred.job.classpath.files", System.getProperty("path.separator"));
     }
@@ -160,7 +160,7 @@ public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
      * for multiple output formats.
      *
      * @param job the mapreduce job to be submitted
-     * @return
+     * @return JobConfigurer
      */
     public static JobConfigurer createConfigurer(Job job) {
         return JobConfigurer.create(job);
@@ -175,7 +175,7 @@ public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
      */
     public static JobContext getJobContext(String alias, JobContext context) {
         String aliasConf = context.getConfiguration().get(getAliasConfName(alias));
-        JobContext aliasContext = new JobContext(context.getConfiguration(), context.getJobID());
+        JobContext aliasContext = HCatHadoopShims.Instance.get().createJobContext(context.getConfiguration(), context.getJobID());
         addToConfig(aliasConf, aliasContext.getConfiguration());
         return aliasContext;
     }
@@ -189,8 +189,8 @@ public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
      */
     public static TaskAttemptContext getTaskAttemptContext(String alias, TaskAttemptContext context) {
         String aliasConf = context.getConfiguration().get(getAliasConfName(alias));
-        TaskAttemptContext aliasContext = new TaskAttemptContext(context.getConfiguration(),
-                context.getTaskAttemptID());
+        TaskAttemptContext aliasContext = HCatHadoopShims.Instance.get().createTaskAttemptContext(
+                context.getConfiguration(), context.getTaskAttemptID());
         addToConfig(aliasConf, aliasContext.getConfiguration());
         return aliasContext;
     }
@@ -207,7 +207,7 @@ public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
      * @throws InterruptedException
      */
     public static <K, V> void write(String alias, K key, V value, TaskInputOutputContext context)
-            throws IOException, InterruptedException {
+        throws IOException, InterruptedException {
         KeyValue<K, V> keyval = new KeyValue<K, V>(key, value);
         context.write(new Text(alias), keyval);
     }
@@ -227,14 +227,14 @@ public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
 
     @Override
     public RecordWriter<Writable, Writable> getRecordWriter(TaskAttemptContext context)
-            throws IOException,
-            InterruptedException {
+        throws IOException,
+        InterruptedException {
         return new MultiRecordWriter(context);
     }
 
     @Override
     public OutputCommitter getOutputCommitter(TaskAttemptContext context) throws IOException,
-            InterruptedException {
+        InterruptedException {
         return new MultiOutputCommitter(context);
     }
 
@@ -288,8 +288,10 @@ public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
                 }
             }
         }
-        builder.delete(builder.length() - CONF_VALUE_DELIM.length(), builder.length());
-        userConf.set(getAliasConfName(alias), builder.toString());
+        if (builder.length() > CONF_VALUE_DELIM.length()) {
+            builder.delete(builder.length() - CONF_VALUE_DELIM.length(), builder.length());
+            userConf.set(getAliasConfName(alias), builder.toString());
+        }
     }
 
     private static String getMergedConfValue(String originalValues, String newValues, String separator) {
@@ -361,7 +363,7 @@ public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
          *
          * @param alias the name used for the OutputFormat during
          *            addOutputFormat
-         * @return
+         * @return Job
          */
         public Job getJob(String alias) {
             Job copy = outputConfigs.get(alias);

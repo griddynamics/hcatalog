@@ -1,13 +1,13 @@
 /**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hcatalog.hbase.snapshot.lock;
 
 import org.apache.zookeeper.ZooKeeper;
@@ -56,6 +57,7 @@ public class WriteLockTest extends ClientBase {
         }
 
     }
+
     protected void runTest(int count) throws Exception {
         nodes = new WriteLock[count];
         for (int i = 0; i < count; i++) {
@@ -84,21 +86,21 @@ public class WriteLockTest extends ClientBase {
 
         if (count > 1) {
             if (killLeader) {
-            System.out.println("Now killing the leader");
-            // now lets kill the leader
-            latch = new CountDownLatch(1);
-            first.unlock();
-            latch.await(30, TimeUnit.SECONDS);
-            //Thread.sleep(10000);
-            WriteLock second = nodes[1];
-            dumpNodes(count);
-            // lets assert that the first election is the leader
-            Assert.assertTrue("The second znode should be the leader " + second.getId(), second.isOwner());
+                System.out.println("Now killing the leader");
+                // now lets kill the leader
+                latch = new CountDownLatch(1);
+                first.unlock();
+                latch.await(30, TimeUnit.SECONDS);
+                //Thread.sleep(10000);
+                WriteLock second = nodes[1];
+                dumpNodes(count);
+                // lets assert that the first election is the leader
+                Assert.assertTrue("The second znode should be the leader " + second.getId(), second.isOwner());
 
-            for (int i = 2; i < count; i++) {
-                WriteLock node = nodes[i];
-                Assert.assertFalse("Node should not be the leader " + node.getId(), node.isOwner());
-            }
+                for (int i = 2; i < count; i++) {
+                    WriteLock node = nodes[i];
+                    Assert.assertFalse("Node should not be the leader " + node.getId(), node.isOwner());
+                }
             }
 
 
@@ -129,7 +131,7 @@ public class WriteLockTest extends ClientBase {
         for (int i = 0; i < count; i++) {
             WriteLock node = nodes[i];
             System.out.println("node: " + i + " id: " +
-                    node.getId() + " is leader: " + node.isOwner());
+                node.getId() + " is leader: " + node.isOwner());
         }
     }
 
