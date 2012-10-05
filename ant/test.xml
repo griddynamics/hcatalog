@@ -79,7 +79,7 @@
     <target name="clover-aggregate">
         <taskdef resource="cloverlib.xml" classpath="${clover.jar}"/>
         <clover-merge initString="hcatalog-clover.db">
-            <cloverDbSet dir="${clover.db.dir}">
+            <cloverDbSet dir="${basedir}">
                 <include name="**/hcat_coverage.db"/>
             </cloverDbSet>
         </clover-merge>
