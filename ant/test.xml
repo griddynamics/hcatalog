@@ -92,6 +92,14 @@
                 <format type="html"/>
             </current>
         </clover-report>
+        <clover-report initstring="hcatalog-clover.db">
+            <current outfile="clover/report/clover.xml" title="HCatalog">
+                <fileset dir="${basedir}">
+                    <include name="**/*.java"/>
+                </fileset>
+                <format type="xml"/>
+            </current>
+        </clover-report>
     </target>
 
   <target name="_test-with-clover" depends="clover-init, test"
