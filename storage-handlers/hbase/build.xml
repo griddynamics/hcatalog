@@ -123,13 +123,24 @@
         <mkdir dir="${build.classes}" />
         <mkdir dir="${test.build.classes}" />
     </target>
+
+    <target name="clover-init">
+        <echo message="CLOVER : ${ant.project.name}"/>
+        <available property="clover.present" file="${clover.jar}"/>
+        <fail message="'clover.home' is not defined. Please pass -Dclover.home=/path/to/clover to ant on the command-line." unless="clover.present"/>
+        <taskdef resource="cloverlib.xml" classpath="${clover.jar}"/>
+        <mkdir dir="${clover.db.dir}/${ant.project.name}"/>
+        <clover-setup initString="${clover.db.dir}/${ant.project.name}/hcat_coverage.db">
+            <fileset dir="${basedir}" excludes="**/NoExitSecurityManager.java,**/test/**/*.java"/>
+        </clover-setup>
+    </target> 
     <!--
     ================================================================================
     Main Build and Jar Section
     ================================================================================
     -->
     <!-- Compile src files -->
-    <target name="compile-src" depends="init">
+    <target name="compile-src" depends="init, clover-init">
         <javac encoding="${build.encoding}" srcdir="${src.dir}:${basedir}/src/gen-java:${basedir}/src/resources" excludes="${excludes}"
                includes="**/*.java" destdir="${build.classes}" debug="${javac.debug}"
                optimize="${javac.optimize}" target="${javac.version}"

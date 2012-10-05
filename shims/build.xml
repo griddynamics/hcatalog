@@ -36,5 +36,5 @@
     <_javac srcDir="${shims.0.23.sources}"
             destDir="${parent.build.dir}"
             classPathRef="shims.0.23.hadoop.ivy.dir"/>
-  </target>
+  </target>  
 </project>

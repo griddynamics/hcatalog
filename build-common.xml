@@ -54,7 +54,7 @@
     <delete dir="${build.dir}"/>
   </target>
 
-  <target name="compile" depends="ivy-retrieve">
+  <target name="compile" depends="ivy-retrieve,clover-init">
     <echo message="${ant.project.name}"/>
     <_javac srcDir="${basedir}/src/main/java"
             destDir="${build.classes}"
@@ -82,6 +82,17 @@
       <artifact:pom file="${pom.file}"/>
     </artifact:install>
   </target>
+
+    <target name="clover-init">
+        <echo message="CLOVER : ${ant.project.name}"/>
+        <available property="clover.present" file="${clover.jar}"/>
+        <fail message="'clover.home' is not defined. Please pass -Dclover.home=/path/to/clover to ant on the command-line." unless="clover.present"/>
+        <taskdef resource="cloverlib.xml" classpath="${clover.jar}"/>
+        <mkdir dir="${clover.db.dir}/${ant.project.name}"/>
+        <clover-setup initString="${clover.db.dir}/${ant.project.name}/hcat_coverage.db">
+            <fileset dir="${basedir}" excludes="**/NoExitSecurityManager.java,**/test/**/*.java"/>
+        </clover-setup>
+    </target>
 
   <target name="findbugs" depends="init-findbugs,jar">
     <echo message="${ant.project.name}"/>
