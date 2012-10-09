@@ -393,7 +393,17 @@
     <taskdef resource="cloverlib.xml" classpath="${clover.jar}"/>
     <mkdir dir="${clover.db.dir}"/>
     <clover-setup initString="${clover.db.dir}/hcat_coverage.db">
-      <fileset dir="src" includes="**/*.java" excludes="**/NoExitSecurityManager.java"/>
+    	<fileset dir="src" id="id">
+    		<include name="**/*.java"/>
+    		<exclude name="**/NoExitSecurityManager.java"  />
+    		<exclude name="**/MiniCluster.java" />
+    		<exclude name="**/HcatTestUtils.java" />
+    		<exclude name="**/cli/SemanticAnalysis/*.java" />
+    		<exclude name="**/pig/drivers/*.java" />
+    		<exclude name="**/rcfile/*.java" />
+		</fileset>
+
+    <!--  <fileset dir="src" includes="**/*.java" excludes="**/NoExitSecurityManager.java"/> -->
     </clover-setup>
   </target>
 
