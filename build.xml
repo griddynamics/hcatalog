@@ -401,7 +401,11 @@
     		<exclude name="**/cli/SemanticAnalysis/*.java" />
     		<exclude name="**/pig/drivers/*.java" />
     		<exclude name="**/rcfile/*.java" />
-		</fileset>
+    		<exclude name="**/cli/DummyStorageHandler.java" />
+    		<exclude name="**/MyPigStorage.java" />
+    		<exclude name="**/hcatalog/oozie/*.java" />
+    		
+ 		</fileset>
 
     <!--  <fileset dir="src" includes="**/*.java" excludes="**/NoExitSecurityManager.java"/> -->
     </clover-setup>
